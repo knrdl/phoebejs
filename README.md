@@ -83,7 +83,7 @@ Phoebe.js is a lightweight, dependency-free JavaScript library that lets you add
 
 ### Complete walkthrough
 
-Have a look at the [phoebe-by-example.html](docs/phoebe-by-example.html) file.
+Have a look at the [Phoebe.js by example](https://knrdl.github.io/phoebejs/phoebe-by-example) page.
 
 ## ⚠️ Caveats
 
