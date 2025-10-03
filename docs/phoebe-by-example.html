@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Phoebe.js by example</title>
+
+    <link href="../src/phoebe.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #ccc;
+            color: #333;
+            font-family: sans-serif;
+
+            background-image:
+                radial-gradient(circle at 30% 30%, #c8c8c8 20%, transparent 21%),
+                radial-gradient(circle at 70% 70%, #cfcfcf 20%, transparent 21%);
+            background-size: 15px 15px;
+            background-repeat: repeat;
+        }
+
+        main {
+            max-width: 80rem;
+            margin: 0 auto;
+        }
+
+        details {
+            margin: 1rem;
+            padding: 1rem;
+            background-color: #fff;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        details[open]>summary {
+            margin-bottom: 1rem;
+        }
+
+        details>summary {
+            cursor: pointer;
+        }
+
+        details>*:not(summary) {
+            margin: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header style="display: flex; align-items: center;justify-content: center; gap:1rem">
+        <img src="../logo.png" style="width: 5rem;" alt="Phoebe.js Logo" />
+        <h1>Phoebe.js by example</h1>
+    </header>
+
+    <main>
+
+        <details>
+            <summary>Basic reactivity & Templating</summary>
+
+            <label>
+                Enter the name of your cat:
+                <input type="text" phoebe-bind="name">
+            </label>
+
+            <div>
+                <phoebe-text>Hello ${name.toUpperCase()} 😺</phoebe-text>
+            </div>
+        </details>
+
+        <details>
+            <summary>Basic Conditions (if)</summary>
+
+            <label>
+                Enter the name of your cat:
+                <input type="text" phoebe-bind="name">
+            </label>
+
+            <div>
+                <phoebe-if if="name.trim().length>0">
+                    <phoebe-text>Hello ${name.toUpperCase()} 😺</phoebe-text>
+                </phoebe-if>
+            </div>
+        </details>
+
+        <details>
+            <summary>Events</summary>
+
+            <button phoebe:onclick="count++">
+                <phoebe-text>Clicked ${count} times</phoebe-text>
+            </button>
+
+            <phoebe-if if="count>0">
+                <button phoebe:onclick="count = 0">reset</button>
+            </phoebe-if>
+        </details>
+
+        <details>
+            <summary>Attributes</summary>
+
+            <div>
+                <input type="range" min="0" max="100" phoebe-bind="sliderValue">
+
+                <output phoebe:style="`color: ${sliderValue < 50 ? 'red' : 'green'}`">
+                    <phoebe-text>sliderValue=${sliderValue}%</phoebe-text>
+                </output>
+
+                <meter min="0" max="100" phoebe:value="100 - sliderValue"></meter>
+            </div>
+        </details>
+
+        <details>
+            <summary>Basic Loops (for)</summary>
+
+            <ol>
+                <phoebe-for var="brand" in="brands">
+                    <li>
+                        <phoebe-text>${brand}</phoebe-text>
+                    </li>
+                </phoebe-for>
+            </ol>
+
+            <hr>
+
+            <label>Search a brand:
+                <input type="text" list="brands-datalist" />
+                (autocomplete)
+                <datalist id="brands-datalist">
+                    <phoebe-for var="brand" in="brands">
+                        <option phoebe:value="brand"></option>
+                    </phoebe-for>
+                </datalist>
+            </label>
+        </details>
+
+        <details>
+            <summary>Advanced reactivity</summary>
+
+            <fieldset>
+                <phoebe-for var="brand" in="brands">
+                    <label>
+                        <input type="radio" phoebe-bind="selectedBrand" phoebe:value="brand" />
+                        <phoebe-text>${brand}</phoebe-text>
+                    </label>
+                </phoebe-for>
+            </fieldset>
+            <phoebe-text>${JSON.stringify({selectedBrand})}</phoebe-text>
+
+            <fieldset>
+                <phoebe-for var="brand" in="brands">
+                    <label>
+                        <input type="checkbox" phoebe-bind="selectedBrands" phoebe:value="brand" />
+                        <phoebe-text>${brand}</phoebe-text>
+                    </label>
+                </phoebe-for>
+            </fieldset>
+            <phoebe-text>${JSON.stringify({selectedBrands})}</phoebe-text>
+        </details>
+
+        <details>
+            <summary>Element references</summary>
+
+            <div>
+                <input type="text" phoebe-ref="inputEl" />
+                <button type="button" phoebe:onclick="inputEl.focus()">
+                    focus input
+                </button>
+
+                <hr>
+
+                <dialog phoebe-ref="dialogEl">
+                    Hello from the dialog!
+                    <form method="dialog">
+                        <button type="submit">Close</button>
+                    </form>
+                </dialog>
+
+                <button type="button" phoebe:onclick="dialogEl.showModal()">
+                    open dialog
+                </button>
+            </div>
+        </details>
+
+        <details>
+            <summary>Timer</summary>
+
+            <input type="number" phoebe-bind="countdown.value" phoebe:disabled="countdown.running" min="0"
+                style="font-size: large;" />
+
+            <label>
+                <input type="checkbox" phoebe-bind="countdown.running" phoebe:disabled="countdown.value===0" />
+                <phoebe-text>${countdown.running ? 'Stop' : 'Start'}</phoebe-text>
+            </label>
+
+            <phoebe-if if="countdown.running && countdown.value > 0">
+                <phoebe-timer every="1s"
+                    do="countdown.value--; if(countdown.value===0) countdown.running = false"></phoebe-timer>
+            </phoebe-if>
+
+        </details>
+    </main>
+
+    <script type="module">
+        import Phoebe from '../src/phoebe.js'
+        window.phoebe = Phoebe({
+            name: '',
+            count: 0,
+            sliderValue: 0,
+            inputEl: undefined,
+            dialogEl: undefined,
+            brands: Object.freeze(['Brand A', 'Brand B', 'Brand C', 'Brand D']),
+            selectedBrand: null,
+            selectedBrands: [],
+            countdown: { running: false, value: 10 }
+        })
+    </script>
+</body>
+
+</html>

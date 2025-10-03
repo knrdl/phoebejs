@@ -87,12 +87,21 @@ Have a look at the [phoebe-by-example.html](docs/phoebe-by-example.html) file.
 
 ## ⚠️ Caveats
 
-* Write phoebe attributes (e.g. `phoebe:value`) always as text literals (like this: `phoebe:value="count / 100"`). Never fill them via javascript with dynamic values (like untrusted user provided input). Otherwise your app may be subject to XSS attacks (script injection).
-* Currently, all state changes schedule a complete re-render. Dependency tracking and fine-grained updates are on the roadmap.
+Write phoebe attributes (e.g. `phoebe:value`) always as text literals (like this: `phoebe:value="count * 100"`). Never fill them via javascript with dynamic values (like untrusted user provided input). Otherwise your app may be subject to XSS attacks (script injection).
+
+> ✅ DO THIS:
+> ```html
+> <progress phoebe:value="count * 100">
+> ```
+
+> ❌ NEVER DO THIS:
+> ```javascript
+> progressElement.setAttribute("phoebe:value", userInput)
+> ```
 
 ## ⚖️ phoebe.js vs alpine.js
 
-| Aspect | **phoebe.js** | **alpine.js** |
+|        | **phoebe.js** | **alpine.js** |
 | ------ | ------------- | ------------- |
 | **Status** | experimental | stable |
 | **Size** | ~10KiB | ~40KiB |
