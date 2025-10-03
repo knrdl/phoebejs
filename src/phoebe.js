@@ -49,6 +49,17 @@ function Phoebe(initialValues, rootNode = undefined) {
         /** @type {Map<string, Function>} */
         const cache = new Map()
 
+        const varSuffix = Math.random().toString(36).slice(2)
+        /**
+         * due to the with-construct, unique variable names are required to not clash with a key in `state` or `scope`
+         * @private
+         * @param {string} varName
+         */
+        function uniqueVarName(varName) {
+            return `_phoebe_${varName}_${varSuffix}`
+        }
+
+
         return {
             /**
              * get a value from a javascript expression
@@ -60,7 +71,11 @@ function Phoebe(initialValues, rootNode = undefined) {
                 try {
                     const cache_key = 'get:' + expr
                     if (!cache.has(cache_key))
-                        cache.set(cache_key, new Function("state", "scope", `with(state){ with(scope){ return (${expr}) } }`))
+                        cache.set(cache_key, new Function(
+                            uniqueVarName('state'),
+                            uniqueVarName('scope'),
+                            `with(${uniqueVarName('state')}){ with(${uniqueVarName('scope')}){ return (${expr}) } }`
+                        ))
                     return cache.get(cache_key).call(_this, state, scope)
                 } catch (e) {
                     console.error('Phoebe.js: error', e, 'executing js.get() with', expr, 'and scope', scope, 'on', _this)
@@ -78,7 +93,12 @@ function Phoebe(initialValues, rootNode = undefined) {
                 try {
                     const cache_key = 'set:' + expr
                     if (!cache.has(cache_key))
-                        cache.set(cache_key, new Function("state", "scope", "value", `with(state) { with(scope){ ${expr} = value } }`))
+                        cache.set(cache_key, new Function(
+                            uniqueVarName('state'),
+                            uniqueVarName('scope'),
+                            uniqueVarName('value'),
+                            `with(${uniqueVarName('state')}) { with(${uniqueVarName('scope')}){ ${expr} = ${uniqueVarName('value')} } }`
+                        ))
                     cache.get(cache_key).call(_this, state, scope, value)
                 } catch (e) {
                     console.error('Phoebe.js: error', e, 'executing js.set() with', expr, '=', value, 'and scope', scope, 'on', _this)
@@ -94,7 +114,11 @@ function Phoebe(initialValues, rootNode = undefined) {
                 try {
                     const cache_key = 'exec:' + expr
                     if (!cache.has(cache_key))
-                        cache.set(cache_key, new Function("state", "scope", `with(state){ with(scope){ ${expr} } }`))
+                        cache.set(cache_key, new Function(
+                            uniqueVarName('state'),
+                            uniqueVarName('scope'),
+                            `with(${uniqueVarName('state')}){ with(${uniqueVarName('scope')}){ ${expr} } }`
+                        ))
                     cache.get(cache_key).call(_this, state, scope)
                 } catch (e) {
                     console.error('Phoebe.js: error', e, 'executing js.exec() with', expr, 'and scope', scope, 'on', _this)
