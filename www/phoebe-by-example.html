@@ -7,6 +7,10 @@
 
     <link href="./phoebe.css" rel="stylesheet">
 
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+
     <style>
         body {
             background-color: #ccc;
@@ -38,10 +42,19 @@
 
         details>summary {
             cursor: pointer;
+            font-weight: bold;
         }
 
         details>*:not(summary) {
             margin: 1rem;
+        }
+
+        code.phoebe-html {
+            display: block;
+            font-family: sans-serif;
+            border: 1px solid #282c34;
+            margin-bottom: 1rem;
+            padding: 1rem;
         }
     </style>
 </head>
@@ -58,47 +71,67 @@
         <details>
             <summary>Basic reactivity & Templating</summary>
 
-            <label>
-                Enter the name of your cat:
-                <input type="text" phoebe-bind="name">
-            </label>
+            <code class="phoebe-html">
+                <label>
+                    Enter the name of your cat:
+                    <input type="text" phoebe-bind="name">
+                </label>
 
-            <div>
                 <phoebe-text>Hello ${name.toUpperCase()} 😺</phoebe-text>
-            </div>
+            </code>
+
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    name: '',
+                })
+            </pre>
         </details>
 
         <details>
             <summary>Basic Conditions (if)</summary>
 
-            <label>
-                Enter the name of your cat:
-                <input type="text" phoebe-bind="name">
-            </label>
+            <code class="phoebe-html">
+                <label>
+                    Enter the name of your cat:
+                    <input type="text" phoebe-bind="name">
+                </label>
 
-            <div>
                 <phoebe-if if="name.trim().length>0">
                     <phoebe-text>Hello ${name.toUpperCase()} 😺</phoebe-text>
                 </phoebe-if>
-            </div>
+            </code>
+
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    name: '',
+                })
+            </pre>
         </details>
 
         <details>
             <summary>Events</summary>
 
-            <button phoebe:onclick="count++">
-                <phoebe-text>Clicked ${count} times</phoebe-text>
-            </button>
+            <code class="phoebe-html">
+                <button phoebe:onclick="count++">
+                    <phoebe-text>Clicked ${count} times</phoebe-text>
+                </button>
 
-            <phoebe-if if="count>0">
-                <button phoebe:onclick="count = 0">reset</button>
-            </phoebe-if>
+                <phoebe-if if="count>0">
+                    <button phoebe:onclick="count = 0">reset</button>
+                </phoebe-if>
+            </code>
+
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    count: 0,
+                })
+            </pre>
         </details>
 
         <details>
             <summary>Attributes</summary>
 
-            <div>
+            <code class="phoebe-html">
                 <input type="range" min="0" max="100" phoebe-bind="sliderValue">
 
                 <output phoebe:style="`color: ${sliderValue < 50 ? 'red' : 'green'}`">
@@ -106,61 +139,87 @@
                 </output>
 
                 <meter min="0" max="100" phoebe:value="100 - sliderValue"></meter>
-            </div>
+            </code>
+
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    sliderValue: 0,
+                })
+            </pre>
         </details>
 
         <details>
             <summary>Basic Loops (for)</summary>
 
-            <ol>
-                <phoebe-for var="brand" in="brands">
-                    <li>
-                        <phoebe-text>${brand}</phoebe-text>
-                    </li>
-                </phoebe-for>
-            </ol>
-
-            <hr>
-
-            <label>Search a brand:
-                <input type="text" list="brands-datalist" />
-                (autocomplete)
-                <datalist id="brands-datalist">
+            <code class="phoebe-html">
+                <ol>
                     <phoebe-for var="brand" in="brands">
-                        <option phoebe:value="brand"></option>
+                        <li>
+                            <phoebe-text>${brand}</phoebe-text>
+                        </li>
                     </phoebe-for>
-                </datalist>
-            </label>
+                </ol>
+
+                <hr>
+
+                <label>Search a brand:
+                    <input type="text" list="brands-datalist" />
+                    (autocomplete)
+                    <datalist id="brands-datalist">
+                        <phoebe-for var="brand" in="brands">
+                            <option phoebe:value="brand"></option>
+                        </phoebe-for>
+                    </datalist>
+                </label>
+            </code>
+
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    brands: Object.freeze(['Brand A', 'Brand B', 'Brand C', 'Brand D'])  // readonly list
+                })
+            </pre>
         </details>
 
         <details>
             <summary>Advanced reactivity</summary>
 
-            <fieldset>
-                <phoebe-for var="brand" in="brands">
-                    <label>
-                        <input type="radio" phoebe-bind="selectedBrand" phoebe:value="brand" />
-                        <phoebe-text>${brand}</phoebe-text>
-                    </label>
-                </phoebe-for>
-            </fieldset>
-            <phoebe-text>${JSON.stringify({selectedBrand})}</phoebe-text>
+            <code class="phoebe-html">
+                <fieldset>
+                    <phoebe-for var="brand" in="brands">
+                        <label>
+                            <input type="radio" phoebe-bind="selectedBrand" phoebe:value="brand" />
+                            <phoebe-text>${brand}</phoebe-text>
+                        </label>
+                    </phoebe-for>
+                </fieldset>
+                <phoebe-text>${JSON.stringify({selectedBrand})}</phoebe-text>
 
-            <fieldset>
-                <phoebe-for var="brand" in="brands">
-                    <label>
-                        <input type="checkbox" phoebe-bind="selectedBrands" phoebe:value="brand" />
-                        <phoebe-text>${brand}</phoebe-text>
-                    </label>
-                </phoebe-for>
-            </fieldset>
-            <phoebe-text>${JSON.stringify({selectedBrands})}</phoebe-text>
+                <hr>
+
+                <fieldset>
+                    <phoebe-for var="brand" in="brands">
+                        <label>
+                            <input type="checkbox" phoebe-bind="selectedBrands" phoebe:value="brand" />
+                            <phoebe-text>${brand}</phoebe-text>
+                        </label>
+                    </phoebe-for>
+                </fieldset>
+                <phoebe-text>${JSON.stringify({selectedBrands})}</phoebe-text>
+            </code>
+
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    brands: Object.freeze(['Brand A', 'Brand B', 'Brand C', 'Brand D']),  // readonly list
+                    selectedBrand: null,  // radio button value
+                    selectedBrands: [],  // checkboxes values
+                })
+            </pre>
         </details>
 
         <details>
             <summary>Element references</summary>
 
-            <div>
+            <code class="phoebe-html">
                 <input type="text" phoebe-ref="inputEl" />
                 <button type="button" phoebe:onclick="inputEl.focus()">
                     focus input
@@ -178,30 +237,80 @@
                 <button type="button" phoebe:onclick="dialogEl.showModal()">
                     open dialog
                 </button>
-            </div>
+            </code>
+
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    inputEl: undefined,
+                    dialogEl: undefined,
+                })
+            </pre>
         </details>
 
         <details>
             <summary>Timer</summary>
 
-            <input type="number" phoebe-bind="countdown.value" phoebe:disabled="countdown.running" min="0"
-                style="font-size: large;" />
+            <code class="phoebe-html">
+                <input type="number" phoebe-bind="countdown.value" phoebe:disabled="countdown.running" min="0"
+                    style="font-size: large;" />
 
-            <label>
-                <input type="checkbox" phoebe-bind="countdown.running" phoebe:disabled="countdown.value===0" />
-                <phoebe-text>${countdown.running ? 'Stop' : 'Start'}</phoebe-text>
-            </label>
+                <label>
+                    <input type="checkbox" phoebe-bind="countdown.running" phoebe:disabled="countdown.value===0" />
+                    <phoebe-text>${countdown.running ? 'Stop' : 'Start'}</phoebe-text>
+                </label>
 
-            <phoebe-if if="countdown.running && countdown.value > 0">
-                <phoebe-timer every="1s"
-                    do="countdown.value--; if(countdown.value===0) countdown.running = false"></phoebe-timer>
-            </phoebe-if>
+                <phoebe-if if="countdown.running && countdown.value > 0">
+                    <phoebe-timer every="1s"
+                        do="countdown.value--; if(countdown.value===0) countdown.running = false"></phoebe-timer>
+                </phoebe-if>
+            </code>
 
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    countdown: { running: false, value: 10 }
+                })
+            </pre>
         </details>
     </main>
 
     <script type="module">
         import Phoebe from './phoebe.js'
+
+        function dedent(str, keepIndent = 0) {
+            // Split into lines
+            const lines = str.split('\n')
+
+            // Find smallest indentation (ignore empty lines)
+            const indents = lines
+                .filter(line => line.trim().length > 0)
+                .map(line => line.match(/^(\s*)/)[0].length - keepIndent)
+
+            const minIndent = Math.min(...indents)
+
+            // Remove that many spaces from the start of each line
+            return lines.map(line => line.slice(minIndent)).join('\n')
+        }
+
+        document.querySelectorAll('details').forEach(details => {
+            const phoebeHtml = details.querySelector('.phoebe-html')
+            const codeBoxHtml = document.createElement('pre')
+            const codeElemHtml = document.createElement('code')
+            codeElemHtml.classList.add('language-phoebe')
+            codeElemHtml.textContent = dedent(phoebeHtml.innerHTML.replaceAll('&gt;', '>').replaceAll('&lt;', '<').replace(/^\s*\r?\n/, ''))
+            codeBoxHtml.appendChild(codeElemHtml)
+            details.insertBefore(codeBoxHtml, phoebeHtml.nextSibling)
+
+            const phoebeJavascript = details.querySelector('.phoebe-javascript')
+            if (!phoebeJavascript) return
+            const codeBoxJs = document.createElement('pre')
+            const codeElemJs = document.createElement('code')
+            codeElemJs.classList.add('language-javascript')
+            codeElemJs.textContent = '<script>\n' + dedent(phoebeJavascript.innerHTML.replaceAll('&gt;', '>').replaceAll('&lt;', '<').replace(/^\s*\r?\n/, ''), 4) + '<\/script>'
+            codeBoxJs.appendChild(codeElemJs)
+            details.insertBefore(codeBoxJs, phoebeJavascript.nextSibling)
+            phoebeJavascript.hidden = true
+        })
+
         window.phoebe = Phoebe({
             name: '',
             count: 0,
@@ -213,6 +322,68 @@
             selectedBrands: [],
             countdown: { running: false, value: 10 }
         })
+
+        hljs.registerLanguage('phoebe', function (hljs) {
+            return {
+                name: 'Phoebe',
+                case_insensitive: true,
+                contains: [
+                    // tags
+                    {
+                        begin: /\bphoebe-(text|if|for|timer|with|component)\b/,
+                        scope: 'keyword'
+                    },
+                    // phoebe:attr="..."
+                    {
+                        begin: /\b(phoebe:\w+)\s*=\s*"/,
+                        end: /"/,
+                        subLanguage: 'javascript'
+                    },
+                    // <phoebe-text>
+                    {
+                        scope: 'template-variable',
+                        begin: /\$\{/,
+                        end: /\}/,
+                        subLanguage: 'javascript'
+                    },
+                    // phoebe-bind="...", phoebe-ref="..."
+                    {
+                        scope: 'template-variable',
+                        begin: /\bphoebe-(bind|ref)="/,
+                        end: /"/,
+                        subLanguage: 'javascript'
+                    },
+                    // <phoebe-if>
+                    {
+                        scope: 'template-variable',
+                        begin: /\bif="/,
+                        end: /"/,
+                        subLanguage: 'javascript'
+                    },
+                    // <phoebe-for>
+                    {
+                        scope: 'template-variable',
+                        begin: /\bvar="/,
+                        end: /"/,
+                        subLanguage: 'javascript'
+                    },
+                    {
+                        scope: 'template-variable',
+                        begin: /\bin="/,
+                        end: /"/,
+                        subLanguage: 'javascript'
+                    },
+                    // <phoebe-timer>
+                    {
+                        scope: 'template-variable',
+                        begin: /\bdo="/,
+                        end: /"/,
+                        subLanguage: 'javascript'
+                    },
+                ]
+            }
+        })
+        hljs.highlightAll()
     </script>
 </body>
 
