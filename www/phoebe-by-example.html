@@ -69,7 +69,7 @@
     <main>
 
         <details>
-            <summary>Basic reactivity & Templating</summary>
+            <summary>Text input binding & templating</summary>
 
             <code class="phoebe-html">
                 <label>
@@ -92,18 +92,23 @@
 
             <code class="phoebe-html">
                 <label>
-                    Enter the name of your cat:
-                    <input type="text" phoebe-bind="name">
+                    Enter the age of your cat:
+                    <input type="number" min="0" phoebe-bind="age">
                 </label>
 
-                <phoebe-if if="name.trim().length>0">
-                    <phoebe-text>Hello ${name.toUpperCase()} 😺</phoebe-text>
+                <phoebe-if if="!Number.isFinite(age)">
+                    Please enter a valid cat age!
+                </phoebe-if>
+                <phoebe-if if="Number.isFinite(age)">
+                    <div style="font-size: large; color:magenta">
+                        <phoebe-text>🎂 ${age} 🎉</phoebe-text>
+                    </div>
                 </phoebe-if>
             </code>
 
             <pre class="phoebe-javascript">
                 Phoebe({
-                    name: '',
+                    age: null,
                 })
             </pre>
         </details>
@@ -132,18 +137,21 @@
             <summary>Attributes</summary>
 
             <code class="phoebe-html">
-                <input type="range" min="0" max="100" phoebe-bind="sliderValue">
+                <input type="range" min="0" max="100" phoebe-bind="catFullness">
 
-                <output phoebe:style="`color: ${sliderValue < 50 ? 'red' : 'green'}`">
-                    <phoebe-text>sliderValue=${sliderValue}%</phoebe-text>
+                <output phoebe:style="`color: ${catFullness < 50 ? 'red' : 'green'}`">
+                    <phoebe-text>catFullness=${catFullness}%</phoebe-text>
                 </output>
 
-                <meter min="0" max="100" phoebe:value="100 - sliderValue"></meter>
+                <label>
+                    Cat hunger:
+                    <meter min="0" max="100" phoebe:value="100 - catFullness"></meter>
+                </label>
             </code>
 
             <pre class="phoebe-javascript">
                 Phoebe({
-                    sliderValue: 0,
+                    catFullness: 0,
                 })
             </pre>
         </details>
@@ -153,21 +161,21 @@
 
             <code class="phoebe-html">
                 <ol>
-                    <phoebe-for var="brand" in="brands">
+                    <phoebe-for var="catName" in="catNames">
                         <li>
-                            <phoebe-text>${brand}</phoebe-text>
+                            <phoebe-text>${catName}</phoebe-text>
                         </li>
                     </phoebe-for>
                 </ol>
 
                 <hr>
 
-                <label>Search a brand:
-                    <input type="text" list="brands-datalist" />
+                <label>Search a cat:
+                    <input type="text" list="cats-datalist" />
                     (autocomplete)
-                    <datalist id="brands-datalist">
-                        <phoebe-for var="brand" in="brands">
-                            <option phoebe:value="brand"></option>
+                    <datalist id="cats-datalist">
+                        <phoebe-for var="catName" in="catNames">
+                            <option phoebe:value="catName"></option>
                         </phoebe-for>
                     </datalist>
                 </label>
@@ -175,7 +183,7 @@
 
             <pre class="phoebe-javascript">
                 Phoebe({
-                    brands: Object.freeze(['Brand A', 'Brand B', 'Brand C', 'Brand D'])  // readonly list
+                    catNames: Object.freeze(['Phoebe', 'Kitty', 'Ruby', 'Kali'])  // readonly list
                 })
             </pre>
         </details>
@@ -185,33 +193,33 @@
 
             <code class="phoebe-html">
                 <fieldset>
-                    <phoebe-for var="brand" in="brands">
+                    <phoebe-for var="catName" in="catNames">
                         <label>
-                            <input type="radio" phoebe-bind="selectedBrand" phoebe:value="brand" />
-                            <phoebe-text>${brand}</phoebe-text>
+                            <input type="radio" phoebe-bind="selectedCatName" phoebe:value="catName" />
+                            <phoebe-text>${catName}</phoebe-text>
                         </label>
                     </phoebe-for>
                 </fieldset>
-                <phoebe-text>${JSON.stringify({selectedBrand})}</phoebe-text>
+                <phoebe-text>${JSON.stringify({selectedCatName})}</phoebe-text>
 
                 <hr>
 
                 <fieldset>
-                    <phoebe-for var="brand" in="brands">
+                    <phoebe-for var="catName" in="catNames">
                         <label>
-                            <input type="checkbox" phoebe-bind="selectedBrands" phoebe:value="brand" />
-                            <phoebe-text>${brand}</phoebe-text>
+                            <input type="checkbox" phoebe-bind="selectedCatNames" phoebe:value="catName" />
+                            <phoebe-text>${catName}</phoebe-text>
                         </label>
                     </phoebe-for>
                 </fieldset>
-                <phoebe-text>${JSON.stringify({selectedBrands})}</phoebe-text>
+                <phoebe-text>${JSON.stringify({selectedCatNames})}</phoebe-text>
             </code>
 
             <pre class="phoebe-javascript">
                 Phoebe({
-                    brands: Object.freeze(['Brand A', 'Brand B', 'Brand C', 'Brand D']),  // readonly list
-                    selectedBrand: null,  // radio button value
-                    selectedBrands: [],  // checkboxes values
+                    catNames: Object.freeze(['Phoebe', 'Kitty', 'Ruby', 'Kali']),  // readonly list
+                    selectedCatName: null,  // radio button value
+                    selectedCatNames: [],  // checkboxes values
                 })
             </pre>
         </details>
@@ -313,13 +321,14 @@
 
         window.phoebe = Phoebe({
             name: '',
+            age: null,
             count: 0,
-            sliderValue: 0,
+            catFullness: 0,
             inputEl: undefined,
             dialogEl: undefined,
-            brands: Object.freeze(['Brand A', 'Brand B', 'Brand C', 'Brand D']),
-            selectedBrand: null,
-            selectedBrands: [],
+            catNames: Object.freeze(['Phoebe', 'Kitty', 'Ruby', 'Kali']),
+            selectedCatName: null,
+            selectedCatNames: [],
             countdown: { running: false, value: 10 }
         })
 
