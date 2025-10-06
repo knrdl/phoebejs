@@ -88,7 +88,7 @@
         </details>
 
         <details>
-            <summary>Basic Conditions (if)</summary>
+            <summary>Conditions (if)</summary>
 
             <code class="phoebe-html">
                 <label>
@@ -189,7 +189,7 @@
         </details>
 
         <details>
-            <summary>Advanced reactivity</summary>
+            <summary>Radio and checkbox group inputs</summary>
 
             <code class="phoebe-html">
                 <fieldset>
@@ -299,12 +299,16 @@
             return lines.map(line => line.slice(minIndent)).join('\n')
         }
 
+        function unescapeHtml(text) {
+            return text.replaceAll('&gt;', '>').replaceAll('&lt;', '<').replaceAll('&amp;', '&').replace(/^\s*\r?\n/, '')
+        }
+
         document.querySelectorAll('details').forEach(details => {
             const phoebeHtml = details.querySelector('.phoebe-html')
             const codeBoxHtml = document.createElement('pre')
             const codeElemHtml = document.createElement('code')
             codeElemHtml.classList.add('language-phoebe')
-            codeElemHtml.textContent = dedent(phoebeHtml.innerHTML.replaceAll('&gt;', '>').replaceAll('&lt;', '<').replace(/^\s*\r?\n/, ''))
+            codeElemHtml.textContent = dedent(unescapeHtml(phoebeHtml.innerHTML))
             codeBoxHtml.appendChild(codeElemHtml)
             details.insertBefore(codeBoxHtml, phoebeHtml.nextSibling)
 
@@ -313,7 +317,7 @@
             const codeBoxJs = document.createElement('pre')
             const codeElemJs = document.createElement('code')
             codeElemJs.classList.add('language-javascript')
-            codeElemJs.textContent = '<script>\n' + dedent(phoebeJavascript.innerHTML.replaceAll('&gt;', '>').replaceAll('&lt;', '<').replace(/^\s*\r?\n/, ''), 4) + '<\/script>'
+            codeElemJs.textContent = '<script>\n' + dedent(unescapeHtml(phoebeJavascript.innerHTML), 4) + '<\/script>'
             codeBoxJs.appendChild(codeElemJs)
             details.insertBefore(codeBoxJs, phoebeJavascript.nextSibling)
             phoebeJavascript.hidden = true
