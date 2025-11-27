@@ -88,7 +88,7 @@
         </details>
 
         <details>
-            <summary>Conditions <code>&lt;phoebe-if&gt;</code></summary>
+            <summary>Conditions <code>&lt;phoebe-if&gt;</code> <code>&lt;phoebe-else&gt;</code></summary>
 
             <code class="phoebe-html">
                 <label>
@@ -96,14 +96,14 @@
                     <input type="number" min="0" phoebe-bind="age">
                 </label>
 
-                <phoebe-if if="!Number.isFinite(age)">
-                    Please enter a valid cat age!
-                </phoebe-if>
                 <phoebe-if if="Number.isFinite(age)">
                     <div style="font-size: large; color:magenta">
                         <phoebe-text>🎂 ${age} 🎉</phoebe-text>
                     </div>
                 </phoebe-if>
+                <phoebe-else>
+                    Please enter a valid cat age!
+                </phoebe-else>
             </code>
 
             <pre class="phoebe-javascript">
@@ -210,7 +210,7 @@
                     <button type="submit">add</button>
                 </form>
             </code>
-            
+
             <pre class="phoebe-javascript">
                 Phoebe({
                     catTasks: {
@@ -517,7 +517,7 @@
                 contains: [
                     // tags
                     {
-                        begin: /\bphoebe-(text|if|for|timer|with|component)\b/,
+                        begin: /\bphoebe-(text|if|else|for|timer|with|component)\b/,
                         scope: 'keyword'
                     },
                     // phoebe:attr="..."

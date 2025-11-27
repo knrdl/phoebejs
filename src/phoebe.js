@@ -643,7 +643,6 @@ function Phoebe(initialValues, rootNode = undefined) {
     window.customElements.define('phoebe-for', PhoebeFor)
 
 
-    // todo: phoebe-else
     // todo: transitions & delay (for loading screens etc)
     class PhoebeIf extends PhoebeElement {
 
@@ -674,22 +673,53 @@ function Phoebe(initialValues, rootNode = undefined) {
             }
 
             const template =/**@type {HTMLTemplateElement} */ (this.firstChild)
+            const elseElem = this.nextElementSibling instanceof PhoebeElse ? this.nextElementSibling : undefined
 
             const shouldShow = !!js.get(this.getAttribute('if'), scope, this)
             const isShowing = template.content.childNodes.length === 0
 
             if (shouldShow && !isShowing) {
                 this.replaceChildren(template, ...template.content.childNodes)
+                if (elseElem) elseElem.hide()
                 if (!isInitRender) this.dispatchEvent(new CustomEvent('true'))
             } else if (!shouldShow && isShowing) {
                 while (template.nextSibling)
                     template.content.appendChild(template.nextSibling)
+                if (elseElem) elseElem.show()
                 if (!isInitRender) this.dispatchEvent(new CustomEvent('false'))
             }
 
         }
     }
     window.customElements.define('phoebe-if', PhoebeIf)
+
+
+    class PhoebeElse extends PhoebeElement {
+
+        #init() {
+            if ((/**@type {HTMLElement?} */(this.firstChild))?.dataset?.phoebeRole !== 'else') {  // init
+                const template = document.createElement('template')
+                template.dataset.phoebeRole = 'else'
+                template.content.replaceChildren(...this.childNodes)
+                this.appendChild(template)
+                this.style.display = "contents"
+            }
+        }
+
+        show() {
+            this.#init()
+            const template =/**@type {HTMLTemplateElement} */ (this.firstChild)
+            this.replaceChildren(template, ...template.content.childNodes)
+        }
+
+        hide() {
+            this.#init()
+            const template =/**@type {HTMLTemplateElement} */ (this.firstChild)
+            while (template.nextSibling)
+                template.content.appendChild(template.nextSibling)
+        }
+    }
+    window.customElements.define('phoebe-else', PhoebeElse)
 
 
     class PhoebeText extends PhoebeElement {
