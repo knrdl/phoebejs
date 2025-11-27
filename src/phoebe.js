@@ -43,6 +43,38 @@ function Phoebe(initialValues, rootNode = undefined) {
         }
     })()
 
+    const utils = {
+        /**
+         * parses durations in secs or millisecs 
+         * @param {string|null} value e.g. "5s" or "50ms"
+         * @returns {number|undefined} value in millisecs
+         */
+        parseDuration(value) {
+            if (typeof value !== 'string') return undefined
+            const strVal = value.trim().toLowerCase()
+            const numVal = parseFloat(strVal)
+
+            if (Number.isFinite(numVal) && (strVal.endsWith('ms') || strVal.endsWith('s'))) {
+                const isSeconds = !strVal.endsWith('ms')
+                return isSeconds ? numVal * 1000 : numVal
+            } else return undefined
+        },
+
+        /**
+         * 
+         * @param {Function} func 
+         * @param {number} delay 
+         * @returns 
+         */
+        debounce(func, delay) {
+            let timer = null
+            return function (...args) {
+                clearTimeout(timer)
+                timer = setTimeout(() => func.apply(this, args), delay)
+            }
+        }
+    }
+
 
     /** utils to execute javascript snippets contained in phoebe strings */
     const js = (() => {
@@ -256,12 +288,24 @@ function Phoebe(initialValues, rootNode = undefined) {
          * @param {string} expr 
          */
         handleEvent(el, eventName, expr) {
+            if (eventName.includes(':')) return  // filter out phoebe:onxxx:debounce
             if (!registry(el).boundEvents) registry(el).boundEvents = new Set()
             if (!registry(el).boundEvents.has(eventName)) {
-                el.addEventListener(eventName, event => {
+
+                const debounceDuration = utils.parseDuration(el.getAttribute('phoebe:on' + eventName + ':debounce'))
+
+                const isPassive = eventName === 'touchstart' || eventName === 'touchmove' || eventName === 'wheel'
+
+                /**@type {EventListener} */
+                const eventListener = event => {
                     const newScope = renderer.buildScope(el)
                     js.exec(expr, { ...newScope, event }, el)
-                })
+                }
+                el.addEventListener(
+                    eventName,
+                    debounceDuration ? utils.debounce(eventListener, debounceDuration) : eventListener,
+                    isPassive ? { passive: true } : false
+                )
                 registry(el).boundEvents.add(eventName)
             }
         },
@@ -410,7 +454,7 @@ function Phoebe(initialValues, rootNode = undefined) {
             const phoebeAttrs = el.getAttributeNames().filter(attr => attr.startsWith("phoebe"))
             if (phoebeAttrs.length > 0) {
                 if (!scope) scope = buildScope(el)
-                phoebeAttrs.sort((a, b) => +(a === "phoebe:class") - +(b === "phoebe:class"))  // execute phoebe:class="xxx yyy" before phoebe-class:xxx="expr"
+                phoebeAttrs.sort((a, b) => +(a === "phoebe:class") - +(b === "phoebe:class"))  // execute phoebe:class="xxx yyy" before phoebe-class:zzz="expr"
                 phoebeAttrs.forEach(attrName => {
                     if (attrName === 'phoebe-bind')
                         directives.handleBinding(el, /**@type {string!}*/(el.getAttribute(attrName)), scope)
@@ -758,13 +802,11 @@ function Phoebe(initialValues, rootNode = undefined) {
 
         connectedCallback() {
             const expr = this.getAttribute('do')
-            const intervalStr = (this.getAttribute('every') ?? '').trim()
-            const interval = parseFloat(intervalStr)
+            const interval = utils.parseDuration(this.getAttribute('every'))
 
-            if (expr && !Number.isNaN(interval) && (intervalStr.endsWith('ms') || intervalStr.endsWith('s'))) {
-                const isSeconds = !intervalStr.endsWith('ms')
+            if (expr && interval) {
                 this.#expr = expr
-                this.#interval = isSeconds ? interval * 1000 : interval
+                this.#interval = interval
                 this.#shouldRun = true
                 renderer.schedule(this)  // setInterval() is started in this.render(), so trigger a rendering
             } else {

@@ -316,6 +316,49 @@
         </details>
 
         <details>
+            <summary>Debounced events</summary>
+
+            <code class="phoebe-html">
+                <input type="text" phoebe-bind="search.text" phoebe:oninput="search.go()" phoebe:oninput:debounce="500ms"/> Search starts when you stop typing
+                <ul>
+                    <phoebe-for var="result" in="search.results">
+                        <li>
+                            <a phoebe:href="result.link">
+                                <phoebe-text>${result.term}</phoebe-text>
+                            </a>
+                        </li>
+                    </phoebe-for>
+                </ul>
+            </code>
+
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    search: {
+                        text: "",
+                        results: [],
+                        async go() {
+                            if (this.text.length > 0) {
+                                const response = await fetch('https://en.wiktionary.org/w/api.php?' + new URLSearchParams({
+                                    action: 'opensearch',
+                                    search: this.text,
+                                    limit: '5',
+                                    format: 'json',
+                                    origin: '*'
+                                }).toString())
+                                if (response.ok) {
+                                    const responseData = await response.json()
+                                    this.results = responseData[1].map((term, index) => ({ term, link: responseData[3][index] }))
+                                }
+                            } else {
+                                this.results = []
+                            }
+                        }
+                    }
+                })
+            </pre>
+        </details>
+
+        <details>
             <summary>Radio and checkbox group inputs</summary>
 
             <code class="phoebe-html">
@@ -505,6 +548,27 @@
                 { id: 4, text: 'todo 4' },
                 { id: 5, text: 'todo 5' },
             ],
+            search: {
+                text: "",
+                results: [],
+                async go() {
+                    if (this.text.length > 0) {
+                        const response = await fetch('https://en.wiktionary.org/w/api.php?' + new URLSearchParams({
+                            action: 'opensearch',
+                            search: this.text,
+                            limit: '5',
+                            format: 'json',
+                            origin: '*'
+                        }).toString())
+                        if (response.ok) {
+                            const responseData = await response.json()
+                            this.results = responseData[1].map((term, index) => ({ term, link: responseData[3][index] }))
+                        }
+                    } else {
+                        this.results = []
+                    }
+                }
+            },
             selectedCatName: null,
             selectedCatNames: [],
             countdown: { running: false, value: 10 }
@@ -522,7 +586,7 @@
                     },
                     // phoebe:attr="..."
                     {
-                        begin: /\b(phoebe:\w+)\s*=\s*"/,
+                        begin: /\b(phoebe:[\w:]+)\s*=\s*"/,
                         end: /"/,
                         subLanguage: 'javascript'
                     },
