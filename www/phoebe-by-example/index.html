@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <title>Phoebe.js by example</title>
 
-    <link href="./phoebe.css" rel="stylesheet">
+    <link href="../phoebe.css" rel="stylesheet">
 
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css">
@@ -29,23 +29,23 @@
             margin: 0 auto;
         }
 
-        details {
+        main>details {
             margin: 1rem;
             padding: 1rem;
             background-color: #fff;
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
         }
 
-        details[open]>summary {
+        main>details[open]>summary {
             margin-bottom: 1rem;
         }
 
-        details>summary {
+        main>details>summary {
             cursor: pointer;
             font-weight: bold;
         }
 
-        details>*:not(summary) {
+        main>details>*:not(summary) {
             margin: 1rem;
         }
 
@@ -62,14 +62,14 @@
 <body>
 
     <header style="display: flex; align-items: center;justify-content: center; gap:1rem">
-        <img src="logo.png" style="width: 5rem;" alt="Phoebe.js Logo" />
+        <img src="../logo.png" style="width: 5rem;" alt="Phoebe.js Logo" />
         <h1>Phoebe.js by example</h1>
     </header>
 
     <main>
 
         <details>
-            <summary>Text input binding & templating</summary>
+            <summary>Text input binding & templating <code>&lt;phoebe-text&gt;</code></summary>
 
             <code class="phoebe-html">
                 <label>
@@ -88,7 +88,7 @@
         </details>
 
         <details>
-            <summary>Conditions (if)</summary>
+            <summary>Conditions <code>&lt;phoebe-if&gt;</code></summary>
 
             <code class="phoebe-html">
                 <label>
@@ -157,7 +157,7 @@
         </details>
 
         <details>
-            <summary>Basic Loops (for)</summary>
+            <summary>Basic loops <code>&lt;phoebe-for&gt;</code></summary>
 
             <code class="phoebe-html">
                 <ol>
@@ -184,6 +184,133 @@
             <pre class="phoebe-javascript">
                 Phoebe({
                     catNames: Object.freeze(['Phoebe', 'Kitty', 'Ruby', 'Kali'])  // readonly list
+                })
+            </pre>
+        </details>
+
+        <details>
+            <summary>Interactive loops <code>&lt;phoebe-for&gt;</code></summary>
+
+
+            <code class="phoebe-html">
+                Cat Tasks:
+                <ul>
+                    <phoebe-for index="i" in="catTasks.list">
+                        <li>
+                            <input type="text" phoebe-bind="catTasks.list[i]" />
+                            <button type="button" phoebe:onclick="catTasks.moveTaskUp(i)" phoebe:disabled="i===0">up</button>
+                            <button type="button" phoebe:onclick="catTasks.moveTaskDown(i)" phoebe:disabled="i===catTasks.list.length-1">down</button>
+                            <button type="button" phoebe:onclick="catTasks.removeTask(i)">remove</button>
+                        </li>
+                    </phoebe-for>
+                </ul>
+
+                <form phoebe:onsubmit="event.preventDefault();catTasks.addTask()">
+                    <input type="text" phoebe-bind="catTasks.newTask" required="required" placeholder="new task" />
+                    <button type="submit">add</button>
+                </form>
+            </code>
+            
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    catTasks: {
+                        newTask: '',
+                        addTask() {
+                            this.list.push(this.newTask)
+                            this.newTask = ''
+                        },
+                        removeTask(index) {
+                            this.list.splice(index, 1)
+                        },
+                        moveTaskUp(index) {
+                            [this.list[index], this.list[index - 1]] = [this.list[index - 1], this.list[index]]
+                        },
+                        moveTaskDown(index) {
+                            [this.list[index], this.list[index + 1]] = [this.list[index + 1], this.list[index]]
+                        },
+                        list: ['sleep', 'scream for food', 'eat', 'sleep', 'repeat']
+                    }
+                })
+            </pre>
+        </details>
+
+        <details>
+            <summary>Stable loops <code>&lt;phoebe-for&gt;</code></summary>
+
+            <ol>
+                <li>
+                    Try this:
+                    Open an expander in the list on the left and one in the list on the right. Then press
+                    <em>shuffle</em>
+                    a few times.
+                </li>
+                <li>
+                    Notice the difference:
+                    The stable list keeps track of which expanders are open, while the
+                    unstable list does not.
+                </li>
+                <li>
+                    Why this happens:
+                    The stable list assigns a unique <code>key</code> to each item.
+                </li>
+                <li>
+                    How it works:
+                    Existing list items are recycled on rerender. If you give each
+                    item a <code>key</code>, Phoebe.js can reorder them correctly.
+                </li>
+                <li>
+                    Recommendation:
+                    Use stable lists whenever possible, and ensure each item has a unique identifier so it can be
+                    correctly distinguished.
+                </li>
+            </ol>
+
+
+            <code class="phoebe-html">
+                <div style="display: flex;justify-content: space-around;">
+                    <div>
+                        <div style="color:red">Unstable:</div>
+                        <ul>
+                            <phoebe-for var="todo" in="todos">
+                                <li>
+                                    <details>
+                                        <summary>
+                                            <phoebe-text>${todo.text}</phoebe-text>
+                                        </summary>
+                                        <phoebe-text>Details for #${todo.id}: ${todo.text}</phoebe-text>
+                                    </details>
+                                </li>
+                            </phoebe-for>
+                        </ul>
+                    </div>
+                    <div>
+                        <div style="color:green">Stable:</div>
+                        <ul>
+                            <phoebe-for var="todo" in="todos" key="todo.id">
+                                <li>
+                                    <details>
+                                        <summary>
+                                            <phoebe-text>${todo.text}</phoebe-text>
+                                        </summary>
+                                        <phoebe-text>Details for #${todo.id}: ${todo.text}</phoebe-text>
+                                    </details>
+                                </li>
+                            </phoebe-for>
+                        </ul>
+                    </div>
+                </div>
+                <button type="button" phoebe:onclick="todos = todos.toSorted(() => Math.random() - 0.5)">shuffle</button>
+            </code>
+
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    todos: [
+                        { id: 1, text: 'todo 1' },
+                        { id: 2, text: 'todo 2' },
+                        { id: 3, text: 'todo 3' },
+                        { id: 4, text: 'todo 4' },
+                        { id: 5, text: 'todo 5' },
+                    ]
                 })
             </pre>
         </details>
@@ -256,14 +383,37 @@
         </details>
 
         <details>
-            <summary>Timer</summary>
+            <summary>Multipage content <code>&lt;phoebe-component&gt;</code></summary>
+
+            <p>
+                When working with multiple subpages, you often need to reuse the same code across HTML files, e.g. for a
+                navigation menu.<br />
+                With <code>&lt;phoebe-component&gt;</code>, you can avoid duplicating code by placing the shared part
+                in a separate HTML file which gets mounted on each subpage.
+            </p>
+
+            <code class="phoebe-html">
+                <phoebe-component src="./nav-menu.html">Loading...</phoebe-component>
+            </code>
+
+            <p>
+                See
+                <code style="font-family: monospace;">
+                    <phoebe-text>view-source:${window.location.href.replace(/\/$/, '')}/nav-menu.html</phoebe-text>
+                </code>
+                for the source of the component.
+            </p>
+        </details>
+
+        <details>
+            <summary>Countdown <code>&lt;phoebe-timer&gt;</code></summary>
 
             <code class="phoebe-html">
                 <input type="number" phoebe-bind="countdown.value" phoebe:disabled="countdown.running" min="0"
                     style="font-size: large;" />
 
                 <label>
-                    <input type="checkbox" phoebe-bind="countdown.running" phoebe:disabled="countdown.value===0" />
+                    <input type="checkbox" phoebe-bind="countdown.running" phoebe:disabled="countdown.value<=0" />
                     <phoebe-text>${countdown.running ? 'Stop' : 'Start'}</phoebe-text>
                 </label>
 
@@ -282,7 +432,7 @@
     </main>
 
     <script type="module">
-        import Phoebe from './phoebe.js'
+        import Phoebe from '../phoebe.js'
 
         function dedent(str, keepIndent = 0) {
             // Split into lines
@@ -303,7 +453,7 @@
             return text.replaceAll('&gt;', '>').replaceAll('&lt;', '<').replaceAll('&amp;', '&').replace(/^\s*\r?\n/, '')
         }
 
-        document.querySelectorAll('details').forEach(details => {
+        document.querySelectorAll('main > details').forEach(details => {
             const phoebeHtml = details.querySelector('.phoebe-html')
             const codeBoxHtml = document.createElement('pre')
             const codeElemHtml = document.createElement('code')
@@ -331,6 +481,30 @@
             inputEl: undefined,
             dialogEl: undefined,
             catNames: Object.freeze(['Phoebe', 'Kitty', 'Ruby', 'Kali']),
+            catTasks: {
+                newTask: '',
+                addTask() {
+                    this.list.push(this.newTask)
+                    this.newTask = ''
+                },
+                removeTask(index) {
+                    this.list.splice(index, 1)
+                },
+                moveTaskUp(index) {
+                    [this.list[index], this.list[index - 1]] = [this.list[index - 1], this.list[index]]
+                },
+                moveTaskDown(index) {
+                    [this.list[index], this.list[index + 1]] = [this.list[index + 1], this.list[index]]
+                },
+                list: ['sleep', 'scream for food', 'eat', 'sleep', 'repeat']
+            },
+            todos: [
+                { id: 1, text: 'todo 1' },
+                { id: 2, text: 'todo 2' },
+                { id: 3, text: 'todo 3' },
+                { id: 4, text: 'todo 4' },
+                { id: 5, text: 'todo 5' },
+            ],
             selectedCatName: null,
             selectedCatNames: [],
             countdown: { running: false, value: 10 }
@@ -383,6 +557,18 @@
                     {
                         scope: 'template-variable',
                         begin: /\bin="/,
+                        end: /"/,
+                        subLanguage: 'javascript'
+                    },
+                    {
+                        scope: 'template-variable',
+                        begin: /\bindex="/,
+                        end: /"/,
+                        subLanguage: 'javascript'
+                    },
+                    {
+                        scope: 'template-variable',
+                        begin: /\bkey="/,
                         end: /"/,
                         subLanguage: 'javascript'
                     },
