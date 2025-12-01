@@ -747,7 +747,7 @@ function Phoebe(initialValues, rootNode = undefined) {
 
                 /**@type {(ev: TransitionEvent) => any} */
                 const onEndListener = (e) => {
-                    if (e.target?.parentElement !== this) return  // transitions are enforced at direct childs
+                    if (e.target instanceof HTMLElement && e.target.parentElement !== this) return  // transitions are enforced at direct childs
                     this.classList.remove('phoebe-transition', classAfter)
                     if (cancelCtrl?.signal.aborted) return
                     doneCb()
