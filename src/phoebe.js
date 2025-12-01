@@ -255,7 +255,7 @@ function Phoebe(initialValues, rootNode = undefined) {
                         js.set(expr, (/**@type {HTMLInputElement}*/(t)).valueAsNumber, newScope, el)
                     else
                         js.set(expr, t.value, newScope, el)
-                })
+                }, { passive: true })
             }
         },
 
@@ -687,52 +687,133 @@ function Phoebe(initialValues, rootNode = undefined) {
     window.customElements.define('phoebe-for', PhoebeFor)
 
 
-    // todo: transitions & delay (for loading screens etc)
     class PhoebeIf extends PhoebeElement {
+
+        /**@type {AbortController | null} */
+        #outTransAbortCtrl = null
 
         constructor() {
             super()
 
             const trueHandler = this.getAttribute('ontrue')
-            if (trueHandler)
-                this.addEventListener('true', () => js.exec(trueHandler, renderer.buildScope(this), this))
+            if (trueHandler) this.addEventListener('true', () => js.exec(trueHandler, renderer.buildScope(this), this))
 
             const falseHandler = this.getAttribute('onfalse')
-            if (falseHandler)
-                this.addEventListener('false', () => js.exec(falseHandler, renderer.buildScope(this), this))
+            if (falseHandler) this.addEventListener('false', () => js.exec(falseHandler, renderer.buildScope(this), this))
+        }
+
+        #init() {
+            if ((/**@type {HTMLElement?} */(this.firstChild))?.dataset?.phoebeRole !== 'if') {
+                const template = document.createElement('template')
+                template.dataset.phoebeRole = 'if'
+                template.content.replaceChildren(...this.childNodes)
+                this.appendChild(template)
+                this.style.display = "contents"
+                return true
+            }
+            return false
+        }
+
+        #show() {
+            const template =/**@type {HTMLTemplateElement} */ (this.firstChild)
+            this.replaceChildren(template, ...template.content.childNodes)
+        }
+
+        #hide() {
+            const template =/**@type {HTMLTemplateElement} */ (this.firstChild)
+            while (template.nextSibling)
+                template.content.appendChild(template.nextSibling)
+        }
+
+        /**
+         * run transition
+         * @param {'in'|'out'} mode
+         * @param {()=>void} doneCb 
+         * @param {AbortController} cancelCtrl 
+         */
+        #transition(mode, doneCb = undefined, cancelCtrl = undefined) {
+
+            this.style.setProperty('--phoebe-transition-duration', this.getAttribute(`transition-${mode}:duration`) ?? this.getAttribute('transition:duration'))
+            this.style.setProperty('--phoebe-transition-delay', this.getAttribute(`transition-${mode}:delay`) ?? this.getAttribute('transition:delay'))
+
+            // cleanup all transition classes
+            for (const c of Array.from(this.classList))
+                if (c.startsWith('phoebe-transition')) this.classList.remove(c)
+
+            const transition = this.getAttribute('transition-' + mode) ?? this.getAttribute('transition')
+            if (transition) {
+                const classBefore = `phoebe-transition-${transition}-${mode === 'in' ? 'out' : 'in'}`
+                const classAfter = `phoebe-transition-${transition}-${mode}`
+
+                /**@type {(ev: TransitionEvent) => any} */
+                const onEndListener = (e) => {
+                    if (e.target?.parentElement !== this) return  // transitions are enforced at direct childs
+                    this.classList.remove('phoebe-transition', classAfter)
+                    if (cancelCtrl?.signal.aborted) return
+                    doneCb()
+                }
+
+                cancelCtrl?.signal.addEventListener('abort', () => this.removeEventListener('transitionend', onEndListener), { once: true, passive: true })
+
+                requestAnimationFrame(() => {
+                    if (cancelCtrl?.signal.aborted) return
+
+                    this.classList.add(classBefore)
+
+                    requestAnimationFrame(() => {
+                        if (cancelCtrl?.signal.aborted) return
+
+                        this.classList.add('phoebe-transition', classAfter)
+                        this.classList.remove(classBefore)
+
+                        // transitions apply to the children of a <phoebe-if>
+                        const template =/**@type {HTMLTemplateElement} */ (this.firstChild)
+                        const style = window.getComputedStyle(template)
+                        const hasTransition = style.transitionDelay !== '0s' || style.transitionDuration !== '0s'
+                        if (hasTransition) {
+                            // doneCb is not a Promise.resolve to prevent attaching this event listener, when not evaluated
+                            if (doneCb) this.addEventListener('transitionend', onEndListener, { once: true }) // not marked as passive because of safari bugs
+                        } else {
+                            console.warn('No valid transition for', mode, 'on', this)
+                            this.classList.remove('phoebe-transition', classAfter)
+                            if (doneCb) doneCb()
+                        }
+                    })
+                })
+            } else if (doneCb) doneCb()
         }
 
         /**
          * @param {object} scope 
          */
         render(scope) {
-            let isInitRender = false
-            if ((/**@type {HTMLElement?} */(this.firstChild))?.dataset?.phoebeRole !== 'if') {  // init
-                isInitRender = true
-                const template = document.createElement('template')
-                template.dataset.phoebeRole = 'if'
-                template.content.replaceChildren(...this.childNodes)
-                this.appendChild(template)
-                this.style.display = "contents"
-            }
+            let isInitRender = this.#init()
 
             const template =/**@type {HTMLTemplateElement} */ (this.firstChild)
             const elseElem = this.nextElementSibling instanceof PhoebeElse ? this.nextElementSibling : undefined
 
-            const shouldShow = !!js.get(this.getAttribute('if'), scope, this)
-            const isShowing = template.content.childNodes.length === 0
+            const shouldShow = !!js.get(this.getAttribute('if') ?? 'true', scope, this)
+            const isShowing = template.content.childNodes.length === 0 && !this.#outTransAbortCtrl
 
             if (shouldShow && !isShowing) {
-                this.replaceChildren(template, ...template.content.childNodes)
+                if (this.#outTransAbortCtrl) { // elements are still shown, just on their way transitioning out
+                    this.#outTransAbortCtrl.abort()
+                    this.#outTransAbortCtrl = null
+                } else // elements are not shown yet
+                    this.#show()
+                this.#transition('in')
                 if (elseElem) elseElem.hide()
                 if (!isInitRender) this.dispatchEvent(new CustomEvent('true'))
             } else if (!shouldShow && isShowing) {
-                while (template.nextSibling)
-                    template.content.appendChild(template.nextSibling)
+                this.#outTransAbortCtrl?.abort()
+                this.#outTransAbortCtrl = new AbortController()
+                this.#transition('out', () => {
+                    this.#hide()
+                    this.#outTransAbortCtrl = null
+                }, this.#outTransAbortCtrl)
                 if (elseElem) elseElem.show()
                 if (!isInitRender) this.dispatchEvent(new CustomEvent('false'))
             }
-
         }
     }
     window.customElements.define('phoebe-if', PhoebeIf)

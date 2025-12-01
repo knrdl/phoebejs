@@ -108,9 +108,68 @@
 
             <pre class="phoebe-javascript">
                 Phoebe({
-                    age: null,
+                    age: null
                 })
             </pre>
+        </details>
+
+        <details>
+            <summary>Transitions</summary>
+
+            <code class="phoebe-html">
+                <label>
+                    <input type="checkbox" phoebe-bind="transitionIn">
+                    <phoebe-text>transition ${transitionIn ? 'in' : 'out'}</phoebe-text>
+                </label>
+
+                <phoebe-if if="transitionIn" transition-in="slide-left" transition-out="slide-right" transition:duration="600ms">
+                    <button type="button">SLIDE LEFT / RIGHT</button>
+                </phoebe-if>
+                <phoebe-if if="transitionIn" transition-in="slide-up" transition-out="slide-down">
+                    <button type="button">SLIDE UP / DOWN</button>
+                </phoebe-if>
+                <phoebe-if if="transitionIn" transition-in="skew-left" transition-out="skew-right">
+                    <button type="button">SKEW LEFT / RIGHT</button>
+                </phoebe-if>
+                <phoebe-if if="transitionIn" transition-in="zoom" transition-in:duration="750ms" transition-out="blur">
+                    <button type="button">ZOOM / BLUR</button>
+                </phoebe-if>
+                <phoebe-if if="transitionIn" transition-in="scale" transition-out="rotate">
+                    <button type="button">SCALE / ROTATE</button>
+                </phoebe-if>
+
+                <phoebe-if if="transitionIn" transition-in="fly-left" transition-out="fly-right">
+                    <div style="background-color: #282c34;color:#cfcfcf;margin:1rem">
+                        FLY LEFT / RIGHT
+                    </div>
+                </phoebe-if>
+
+                <div>
+                    <phoebe-if if="transitionIn" transition="fade" transition-in:delay="0s" transition-out:delay="2s" transition:duration="2s">
+                        <span>A</span>
+                    </phoebe-if>
+                    <phoebe-if if="transitionIn" transition="fade" transition-in:delay="0.5s" transition-out:delay="1.5s" transition:duration="2s">
+                        <span>B</span>
+                    </phoebe-if>
+                    <phoebe-if if="transitionIn" transition="fade" transition:delay="1s" transition:duration="2s">
+                        <span>C</span>
+                    </phoebe-if>
+                    <phoebe-if if="transitionIn" transition="fade" transition-in:delay="1.5s" transition-out:delay="0.5s" transition:duration="2s">
+                        <span>D</span>
+                    </phoebe-if>
+                    <phoebe-if if="transitionIn" transition="fade" transition-in:delay="2s" transition-out:delay="0s" transition:duration="2s">
+                        <span>E</span>
+                    </phoebe-if>
+                </div>
+            </code>
+
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    transitionIn: false
+                })
+            </pre>
+
+            Have a look at the <code>phoebe.css</code> file for all built-in transitions. You can define your own custom transitions as well.
         </details>
 
         <details>
@@ -519,6 +578,7 @@
         window.phoebe = Phoebe({
             name: '',
             age: null,
+            transitionIn: false,
             count: 0,
             catFullness: 0,
             inputEl: undefined,
