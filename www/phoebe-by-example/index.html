@@ -196,16 +196,54 @@
             <summary>Attributes</summary>
 
             <code class="phoebe-html">
-                <input type="range" min="0" max="100" phoebe-bind="catFullness">
-
-                <output phoebe:style="`color: ${catFullness < 50 ? 'red' : 'green'}`">
-                    <phoebe-text>catFullness=${catFullness}%</phoebe-text>
-                </output>
+                <label>
+                    <phoebe-text>Cat fullness: ${catFullness}%</phoebe-text>
+                    <input type="range" min="0" max="100" phoebe-bind="catFullness">
+                </label>
 
                 <label>
                     Cat hunger:
-                    <meter min="0" max="100" phoebe:value="100 - catFullness"></meter>
+                    <meter min="0" max="100" low="50"  phoebe:value="100 - catFullness"></meter>
                 </label>
+
+                <strong phoebe:hidden="catFullness > 50">
+                    Feed the cat!
+                </strong>
+
+                <dialog phoebe:open="catFullness === 100">Cat is happy!</dialog>
+            </code>
+
+            <pre class="phoebe-javascript">
+                Phoebe({
+                    catFullness: 0,
+                })
+            </pre>
+        </details>
+
+        <details>
+            <summary><code>class</code> attribute</summary>
+
+            <code class="phoebe-html">
+                <label>
+                    Cat fullness:
+                    <input type="range" min="0" max="100" phoebe-bind="catFullness">
+                </label>
+
+                <span phoebe:class="`${catFullness < 50 ? 'bad' : 'good'}`">
+                    phoebe:class
+                </span> vs
+                <span phoebe-class:good="catFullness > 80" phoebe-class:bad="catFullness < 20">
+                    phoebe-class
+                </span>
+
+                <style>
+                    .good {
+                        color: green;
+                    }
+                    .bad {
+                        color: red;
+                    }
+                </style>
             </code>
 
             <pre class="phoebe-javascript">
@@ -647,6 +685,12 @@
                     // phoebe:attr="..."
                     {
                         begin: /\b(phoebe:[\w:]+)\s*=\s*"/,
+                        end: /"/,
+                        subLanguage: 'javascript'
+                    },
+                    // phoebe-class:classname="..."
+                    {
+                        begin: /\bphoebe-class:\w+\s*=\s*"/,
                         end: /"/,
                         subLanguage: 'javascript'
                     },
